@@ -4,7 +4,7 @@ pub struct StrSplit<'a> {
 }
 
 
-impl<'a> StrSplit<'a>{
+impl<'a> StrSplit<'a> {
     fn new(haystack: &'a str, delimiter: &'a str) -> Self {
         Self {
             remainder: haystack,
