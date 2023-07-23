@@ -1,10 +1,10 @@
-pub struct StrSplit<'a, 'b> {
-    remainder: Option<&'a str>,
-    delimiter: &'b str,
+pub struct StrSplit<'haystack, D> {
+    remainder: Option<&'haystack str>,
+    delimiter: D,
 }
 
-impl<'a, 'b> StrSplit<'a, 'b> {
-    fn new(haystack: &'a str, delimiter: &'b str) -> Self {
+impl<'haystack, D> StrSplit<'haystack, D> {
+    fn new(haystack: &'haystack str, delimiter: D) -> Self {
         Self {
             remainder: Some(haystack),
             delimiter,
@@ -12,14 +12,22 @@ impl<'a, 'b> StrSplit<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Iterator for StrSplit<'a, 'b> {
-    type Item = &'a str;
+pub trait Delimiter {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)>;
+}
+
+
+impl<'haystack, D> Iterator for StrSplit<'haystack, D> 
+where
+    D: Delimiter,
+{
+    type Item = &'haystack str;
 
     fn next(&mut self) -> Option<Self::Item> {
         let remainder = self.remainder.as_mut()?;
-        if let Some(next_delim) = remainder.find(self.delimiter) {
-            let until_delimiter = &remainder[..next_delim];
-            *remainder = &remainder[(next_delim + self.delimiter.len())..];
+        if let Some((delim_start, delim_end)) = self.delimiter.find_next(&remainder) {
+            let until_delimiter = &remainder[..delim_start];
+            *remainder = &remainder[delim_end..];
             Some(until_delimiter)
         } else {
             self.remainder.take()
@@ -28,8 +36,19 @@ impl<'a, 'b> Iterator for StrSplit<'a, 'b> {
 }
 
 
-fn until_char(s: &str, c: char) -> &str {
-    StrSplit::new(s, &format!("{}", c))
+impl Delimiter for &str {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
+       s.find(self)
+        .map(|start| {
+            (start, start + self.len())
+        })
+    }
+}
+
+
+fn until_char(s: &str, c: char) -> &'_ str {
+    let delim = format!("{}", c);
+    StrSplit::new(s, &*delim)
         .next()
         .expect("at least one")
 }
