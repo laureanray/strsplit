@@ -16,7 +16,6 @@ pub trait Delimiter {
     fn find_next(&self, s: &str) -> Option<(usize, usize)>;
 }
 
-
 impl<'haystack, D> Iterator for StrSplit<'haystack, D> 
 where
     D: Delimiter,
@@ -45,10 +44,17 @@ impl Delimiter for &str {
     }
 }
 
+impl Delimiter for char {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
+        s.char_indices()
+            .find(|(_, c)| c == self)
+            .map(|(start, _)| (start, start + 1))
+    }
+}
+
 
 fn until_char(s: &str, c: char) -> &'_ str {
-    let delim = format!("{}", c);
-    StrSplit::new(s, &*delim)
+    StrSplit::new(s, c)
         .next()
         .expect("at least one")
 }
@@ -72,10 +78,3 @@ fn tail() {
     let letters = StrSplit::new(haystack, " ");
     assert!(letters.eq(vec!["a", "b", "c", "d", ""].into_iter()));
 }
-
-// #[test] 
-// fn empty_tail() {
-//     let haystack = "a b c d ";
-//     let letters = StrSplit::new(haystack, " ");
-//     assert!(letters.eq(vec!["a", "b", "c", "d", ""].into_iter()));
-// }
