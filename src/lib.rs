@@ -3,16 +3,14 @@ pub struct StrSplit<'a> {
     delimiter: &'a str,
 }
 
-
 impl<'a> StrSplit<'a> {
     fn new(haystack: &'a str, delimiter: &'a str) -> Self {
         Self {
             remainder: haystack,
-            delimiter
+            delimiter,
         }
     }
 }
-
 
 impl<'a> Iterator for StrSplit<'a> {
     type Item = &'a str;
@@ -37,4 +35,11 @@ fn it_works() {
     let haystack = "a b c d e";
     let letters = StrSplit::new(haystack, " ");
     assert!(letters.eq(vec!["a", "b", "c", "d", "e"].into_iter()));
+}
+
+#[test]
+fn tail() {
+    let haystack = "a b c d ";
+    let letters = StrSplit::new(haystack, " ");
+    assert!(letters.eq(vec!["a", "b", "c", "d", ""].into_iter()));
 }
