@@ -1,10 +1,10 @@
-pub struct StrSplit<'a> {
+pub struct StrSplit<'a, 'b> {
     remainder: Option<&'a str>,
-    delimiter: &'a str,
+    delimiter: &'b str,
 }
 
-impl<'a> StrSplit<'a> {
-    fn new(haystack: &'a str, delimiter: &'a str) -> Self {
+impl<'a, 'b> StrSplit<'a, 'b> {
+    fn new(haystack: &'a str, delimiter: &'b str) -> Self {
         Self {
             remainder: Some(haystack),
             delimiter,
@@ -12,7 +12,7 @@ impl<'a> StrSplit<'a> {
     }
 }
 
-impl<'a> Iterator for StrSplit<'a> {
+impl<'a, 'b> Iterator for StrSplit<'a, 'b> {
     type Item = &'a str;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -26,6 +26,19 @@ impl<'a> Iterator for StrSplit<'a> {
         }
     }
 }
+
+
+fn until_char(s: &str, c: char) -> &str {
+    StrSplit::new(s, &format!("{}", c))
+        .next()
+        .expect("at least one")
+}
+
+#[test]
+fn until_char_test() {
+    assert_eq!(until_char("hello world", 'o'), "hell");
+}
+
 
 #[test]
 fn it_works() {
